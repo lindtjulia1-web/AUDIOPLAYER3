@@ -2,37 +2,35 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v7.2</title>
+    <title>Твой аудиоплеер v7.3</title>
     <style>
         :root { --accent: #00d4ff; --bg: #0f0f12; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 340px; background: #18181c; padding: 25px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
-        .sidebar h2 { color: var(--accent); font-size: 14px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar h2 { color: var(--accent); font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
         label { display: block; font-size: 10px; color: #888; margin-top: 15px; font-weight: bold; }
         input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 10px; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
         .row { display: flex; gap: 10px; }
-        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-upd:hover { box-shadow: 0 0 15px var(--accent); }
+        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .btn-code { background: transparent; border: 1px solid #444; color: #aaa; padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-size: 11px; }
         .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
         #ifr-wrap { border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.8); background: #111; }
-        #mod { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .mod-cnt { background: #1a1a1e; padding: 30px; border-radius: 20px; width: 500px; border: 1px solid var(--accent); }
-        #res { width: 100%; height: 180px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #333; resize: none; }
+        #mod { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .mod-cnt { background: #1a1a1e; padding: 30px; border-radius: 20px; width: 550px; border: 1px solid var(--accent); }
+        #res { width: 100%; height: 200px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #333; resize: none; word-break: break-all; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>КОНСТРУКТОР V7.2</h2>
-    
-    <label>GitHub Root (музыка)</label>
+    <h2>КОНСТРУКТОР V7.3</h2>
+    <label>GitHub Root (адрес папки)</label>
     <input type="text" id="in-gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
-    <label>Фоновое изображение (URL)</label>
-    <input type="text" id="in-bg-img" placeholder="Вставь ссылку на картинку или оставь пустым">
+    <label>Фоновая картинка (URL)</label>
+    <input type="text" id="in-bg-img" placeholder="Оставь пустым для цвета">
 
-    <label>Цвета (Фон-заглушка | Волна | Акцент)</label>
+    <label>Цвета (Фон | Волна | Акцент)</label>
     <div class="row">
         <input type="color" id="in-c1" value="#161b22">
         <input type="color" id="in-c2" value="#ffffff">
@@ -59,17 +57,93 @@ Track 02 | 2.mp3</textarea>
 
 <div id="mod">
     <div class="mod-cnt">
-        <h3 style="margin:0; color:var(--accent)">Код готов!</h3>
+        <h3 style="margin:0; color:var(--accent)">Код для вставки:</h3>
         <textarea id="res" readonly onclick="this.select()"></textarea>
         <button class="btn-upd" onclick="document.getElementById('mod').style.display='none'">ЗАКРЫТЬ</button>
     </div>
 </div>
 
 <script>
-function getSrc() {
-    const gh = document.getElementById('in-gh').value,
-          bgImg = document.getElementById('in-bg-img').value,
-          c1 = document.getElementById('in-c1').value,
-          c2 = document.getElementById('in-c2').value,
-          c3 = document.getElementById('in-c3').value,
-          list = document.getElementById('in-list').value.split('\
+function generatePlayerHTML() {
+    const gh = document.getElementById('in-gh').value;
+    const bgImg = document.getElementById('in-bg-img').value;
+    const c1 = document.getElementById('in-c1').value;
+    const c2 = document.getElementById('in-c2').value;
+    const c3 = document.getElementById('in-c3').value;
+    const listRaw = document.getElementById('in-list').value.split('\n').filter(l => l.includes('|'));
+    const list = listRaw.map(l => {
+        const p = l.split('|');
+        return { n: p[0].trim(), f: p[1].trim() };
+    });
+
+    const background = bgImg ? `url('${bgImg}') center/cover no-repeat` : c1;
+
+    // Весь HTML/CSS/JS плеера в одной строке без лишних кавычек
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body { margin:0; padding:0; height:100vh; font-family:sans-serif; background:${background}; color:white; overflow:hidden; display:flex; border-radius:30px; position:relative; }
+    .glass { position:absolute; inset:0; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); z-index:0; }
+    .vol-box { width:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; z-index:1; border-right:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); }
+    .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:120px; width:6px; accent-color:${c3}; cursor:pointer; }
+    .main { flex:1; display:flex; flex-direction:column; padding:25px; z-index:1; position:relative; }
+    .info { text-align:right; margin-bottom:5px; }
+    #tn { font-size:16px; font-weight:bold; color:${c3}; }
+    #tm { font-size:12px; opacity:0.6; font-family:monospace; }
+    .wv { flex:1; display:flex; align-items:center; justify-content:center; gap:4px; }
+    .b { width:4px; height:10px; background:${c2}; border-radius:2px; box-shadow:0 0 10px ${c2}88; opacity:0.7; transition:0.1s; }
+    .ctrl { display:flex; align-items:center; justify-content:flex-end; gap:20px; }
+    .btn { background:none; border:none; color:white; cursor:pointer; font-size:24px; opacity:0.8; }
+    .pl { width:50px; height:50px; background:${c3}; color:black; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    </style></head><body><div class="glass"></div>
+    <div class="vol-box">🔔<input type="range" class="vs" min="0" max="1" step="0.01" value="0.5" oninput="a.volume=this.value">🎵</div>
+    <div class="main">
+        <div class="info"><div id="tn">LOADING...</div><div id="tm">00:00</div></div>
+        <div class="wv" id="wv"></div>
+        <div class="ctrl">
+            <button class="btn" onclick="m(-1)">⏮</button>
+            <button class="btn pl" id="pb" onclick="t()">▶</button>
+            <button class="btn" onclick="m(1)">⏭</button>
+        </div>
+    </div>
+    <script>
+    const R="${gh}", L=${JSON.stringify(list)}; let ci=0, ip=false; const a=new Audio();
+    const wv=document.getElementById('wv'); for(let i=0;i<30;i++) wv.innerHTML+='<div class="b"></div>';
+    function ld(i){ ci=i; a.src=R+L[ci].f; document.getElementById('tn').innerText=L[ci].n; }
+    function t(){ if(ip){a.pause(); pb.innerText="▶"} else {a.play(); pb.innerText="⏸"} ip=!ip; }
+    function m(s){ ci=(ci+s+L.length)%L.length; ld(ci); if(ip) a.play(); }
+    a.ontimeupdate=()=>{
+        let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
+        document.getElementById('tm').innerText=m+":"+(s<10?"0":"")+s;
+        if(ip) document.querySelectorAll('.b').forEach(x=>x.style.height=(Math.random()*50+5)+'px');
+    };
+    a.onended=()=>m(1); ld(0);
+    <\/script></body></html>`;
+}
+
+function upd() {
+    const w = document.getElementById('in-w').value;
+    const h = document.getElementById('in-h').value;
+    const wrap = document.getElementById('ifr-wrap');
+    const ifr = document.getElementById('ifr');
+    
+    wrap.style.width = w + "px";
+    wrap.style.height = h + "px";
+    
+    // Безопасная передача кода в iframe
+    const blob = new Blob([generatePlayerHTML()], {type: 'text/html'});
+    ifr.src = URL.createObjectURL(blob);
+}
+
+function show() {
+    // Для итогового кода используем стандартный метод с экранированием кавычек
+    const rawHtml = generatePlayerHTML();
+    const escapedHtml = rawHtml.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    const finalCode = `<iframe width="${document.getElementById('in-w').value}" height="${document.getElementById('in-h').value}" srcdoc="${escapedHtml}" frameborder="0" scrolling="no" style="border-radius:30px;"></iframe>`;
+    
+    document.getElementById('res').value = finalCode;
+    document.getElementById('mod').style.display = 'flex';
+}
+
+window.onload = upd;
+</script>
+</body>
+</html>
