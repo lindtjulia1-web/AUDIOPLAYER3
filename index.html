@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Твой аудиоплеер v5.0</title>
+    <style>
+        :root { --accent: #00d4ff; --bg: #121214; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e1e1e6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 340px; background: #19191c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
+        .sidebar h2 { color: var(--accent); font-size: 16px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; font-size: 10px; color: #888; margin-top: 10px; font-weight: bold; }
+        input, textarea { width: 100%; background: #29292e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; font-size: 13px; }
+        .row { display: flex; gap: 8px; }
+        .btn-gen { background: var(--accent); color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-gen:hover { opacity: 0.8; }
+        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+        #iframe-wrap { border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>ТВОЙ АУДИОПЛЕЕР 5.0</h2>
+    
+    <label>Адрес хранилища</label>
+    <input type="text" id="gh-root" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
+    
+    <label>Ссылка на фоновую картинку</label>
+    <input type="text" id="bg-img" value="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop" oninput="updatePreview()">
+
+    <label>Размеры (Ш х В)</label>
+    <div class="row">
+        <input type="number" id="p-w" value="600" oninput="updatePreview()">
+        <input type="number" id="p-h" value="250" oninput="updatePreview()">
+    </div>
+    
+    <label>Цвета (Текст | Акцент)</label>
+    <div class="row">
+        <input type="color" id="clr-text" value="#ffffff" oninput="updatePreview()">
+        <input type="color" id="clr-acc" value="#00d4ff" oninput="updatePreview()">
+    </div>
+
+    <label>Плейлист</label>
+    <textarea id="playlist-data" rows="4" oninput="updatePreview()">Track 01 | 1.mp3
+Track 02 | 2.mp3</textarea>
+
+    <button class="btn-gen" onclick="showCode()">ПОЛУЧИТЬ КОД</button>
+</div>
+
+<div class="preview-area">
+    <div id="iframe-wrap"><div id="iframe-container"></div></div>
+</div>
+
+<script>
+function generatePlayerSource() {
+    const root = document.getElementById('gh-root').value,
+          bg = document.getElementById('bg-img').value,
+          ct = document.getElementById('clr-text').value,
+          ca = document.getElementById('clr-acc').value;
+    
+    const rawList = document.getElementById('playlist-data').value.split('\n').filter(l => l.includes('|'));
+    const playlist = rawList.map(l => { const p = l.split('|'); return { n: p[0].trim(), f: p[1].trim() }; });
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+        body { margin: 0; padding: 0; height: 100vh; display: flex; align-items: center; font-family: 'Segoe UI', sans-serif; overflow: hidden; color: ${ct}; }
+        .player-card { width: 100%; height: 100%; background: url('${bg}') center/cover no-repeat; display: flex; position: relative; }
+        .player-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); }
+        
+        .side-vol { position: relative; z-index: 2; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); }
+        .vol-slider { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 4px; height: 120px; accent-color: ${ca}; }
+        
+        .content { flex: 1; z-index: 2; display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
+        .track-info { text-align: right; }
+        .track-n { font-size: 14px; opacity: 0.8; margin-bottom: 4px; }
+        .track-t { font-size: 28px; font-weight: bold; letter-spacing: 1px; color: ${ca}; }
+        
+        .visualizer { flex: 1; display: flex; align-items: center; justify-content: center; gap: 3px; }
+        .bar { width: 4px; height: 20px; background: ${ct}; opacity: 0.5; border-radius: 2px; transition: 0.2s; }
+
+        .controls { display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
+        .btn { background: none; border: none; color: ${ct}; cursor: pointer; font-size: 20px; transition: 0.3s; padding: 0; }
+        .btn-play { width: 50px; height: 50px; background: ${ct}; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .btn:hover { transform: scale(1.1); color: ${ca}; }
+        .btn-play:hover { background: ${ca}; color: #000; }
+    </style></head><body>
+    <div class="player-card">
+        <div class="side-vol">
+            <span>🔔</span>
+            <input type="range" class="vol-slider" min="0" max="1" step="0.01" value="0" oninput="a.volume=this.value">
+            <span>🎵</span>
+        </div>
+        <div class="content">
+            <div class="track-info">
+                <div class="track-n" id="artist">ARTIST</div>
+                <div class="track-t" id="title">00:00</div>
+            </div>
+            <div class="visualizer" id="viz"></div>
+            <div class="controls">
+                <button class="btn" onclick="mv(-1)">⏮</button>
+                <button class="btn btn-play" id="pB" onclick="tg()">▶</button>
+                <button class="btn" onclick="mv(1)">⏭</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const B="${root}", T=${JSON.stringify(playlist)};
+        let ci=0, iP=false; const a=new Audio(); a.volume=0;
+        const viz=document.getElementById("viz");
+        for(let i=0; i<30; i++){ let b=document.createElement("div"); b.className="bar"; viz.appendChild(b); }
+        
+        function ld(i){ ci=i; a.src=B+T[ci].f; document.getElementById("artist").innerText=T[ci].n; }
+        function tg(){ if(iP){ a.pause(); document.getElementById("pB").innerText="▶"; } else { a.play(); document.getElementById("pB").innerText="⏸"; } iP=!iP; }
+        function mv(s){ ci=(ci+s+T.length)%T.length; ld(ci); if(iP) a.play(); }
+        
+        a.ontimeupdate=()=>{ 
+            let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
+            document.getElementById("title").innerText=m+":"+(s<10?"0":"")+s;
+            if(iP) document.querySelectorAll(".bar").forEach(b=>b.style.height=(Math.random()*40+10)+"px");
+        };
+        a.onended=()=>mv(1); ld(0);
+    <\/script></body></html>`;
+}
+
+function updatePreview() {
+    const w = document.getElementById('p-w').value, h = document.getElementById('p-h').value;
+    const wrap = document.getElementById('iframe-wrap'), container = document.getElementById('iframe-container');
+    wrap.style.width = w + "px"; wrap.style.height = h + "px";
+    container.innerHTML = `<iframe id="p-frame" width="100%" height="100%" frameborder="0" style="background:transparent;"></iframe>`;
+    document.getElementById('p-frame').srcdoc = generatePlayerSource();
+}
+
+function showCode() {
+    const escaped = generatePlayerSource().replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    const w = document.getElementById('p-w').value, h = document.getElementById('p-h').value;
+    prompt("Скопируйте код для Genially:", `<iframe width="${w}" height="${h}" srcdoc="${escaped}" frameborder="0" scrolling="no" style="border-radius:24px;"></iframe>`);
+}
+window.onload = updatePreview;
+</script>
+</body>
+</html>
