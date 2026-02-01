@@ -2,16 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v7.1</title>
+    <title>Твой аудиоплеер v7.2</title>
     <style>
         :root { --accent: #00d4ff; --bg: #0f0f12; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 340px; background: #18181c; padding: 25px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
-        .sidebar h2 { color: var(--accent); font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
+        .sidebar h2 { color: var(--accent); font-size: 14px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         label { display: block; font-size: 10px; color: #888; margin-top: 15px; font-weight: bold; }
         input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 10px; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
         .row { display: flex; gap: 10px; }
-        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-upd:hover { box-shadow: 0 0 15px var(--accent); }
         .btn-code { background: transparent; border: 1px solid #444; color: #aaa; padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-size: 11px; }
         .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
         #ifr-wrap { border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.8); background: #111; }
@@ -23,11 +24,15 @@
 <body>
 
 <div class="sidebar">
-    <h2>КОНСТРУКТОР V7.1</h2>
+    <h2>КОНСТРУКТОР V7.2</h2>
+    
     <label>GitHub Root (музыка)</label>
     <input type="text" id="in-gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
-    <label>Цвета (Фон | Волна | Акцент)</label>
+    <label>Фоновое изображение (URL)</label>
+    <input type="text" id="in-bg-img" placeholder="Вставь ссылку на картинку или оставь пустым">
+
+    <label>Цвета (Фон-заглушка | Волна | Акцент)</label>
     <div class="row">
         <input type="color" id="in-c1" value="#161b22">
         <input type="color" id="in-c2" value="#ffffff">
@@ -63,65 +68,8 @@ Track 02 | 2.mp3</textarea>
 <script>
 function getSrc() {
     const gh = document.getElementById('in-gh').value,
+          bgImg = document.getElementById('in-bg-img').value,
           c1 = document.getElementById('in-c1').value,
           c2 = document.getElementById('in-c2').value,
           c3 = document.getElementById('in-c3').value,
-          list = document.getElementById('in-list').value.split('\n').filter(l=>l.includes('|')).map(l=>{
-              const p=l.split('|'); return {n:p[0].trim(), f:p[1].trim()};
-          });
-
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-        body { margin:0; padding:0; height:100vh; font-family:sans-serif; background:${c1}; color:white; overflow:hidden; display:flex; border-radius:30px; }
-        .vol { width:50px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; border-right:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.1); }
-        .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:100px; width:4px; accent-color:${c3}; cursor:pointer; }
-        .main { flex:1; display:flex; flex-direction:column; padding:20px; position:relative; }
-        .info { text-align:right; margin-bottom:10px; }
-        .tn { font-size:14px; font-weight:bold; color:${c3}; }
-        .tm { font-size:11px; opacity:0.5; font-family:monospace; }
-        .wave { flex:1; display:flex; align-items:center; justify-content:center; gap:3px; }
-        .b { width:3px; height:8px; background:${c2}; border-radius:2px; opacity:0.5; transition:0.1s; }
-        .btns { display:flex; align-items:center; justify-content:flex-end; gap:15px; }
-        .btn { background:none; border:none; color:white; cursor:pointer; font-size:22px; }
-        .pl { width:48px; height:48px; background:white; color:black; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-    </style></head><body>
-        <div class="vol">🔔<input type="range" class="vs" min="0" max="1" step="0.01" value="0" oninput="a.volume=this.value">🎵</div>
-        <div class="main">
-            <div class="info"><div id="tn" class="tn">READY</div><div id="tm" class="tm">00:00</div></div>
-            <div class="wave" id="wv"></div>
-            <div class="btns">
-                <button class="btn" onclick="m(-1)">⏮</button>
-                <button class="btn pl" id="pb" onclick="t()">▶</button>
-                <button class="btn" onclick="m(1)">⏭</button>
-            </div>
-        </div>
-    <script>
-        const R="${gh}", L=${JSON.stringify(list)}; let ci=0, ip=false; const a=new Audio(); a.volume=0;
-        const wv=document.getElementById('wv'); for(let i=0;i<40;i++) wv.innerHTML+='<div class="b"></div>';
-        function ld(i){ ci=i; a.src=R+L[ci].f; document.getElementById('tn').innerText=L[ci].n; }
-        function t(){ if(ip){a.pause(); pb.innerText="▶"} else {a.play(); pb.innerText="⏸"} ip=!ip; }
-        function m(s){ ci=(ci+s+L.length)%L.length; ld(ci); if(ip) a.play(); }
-        a.ontimeupdate=()=>{
-            let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
-            document.getElementById('tm').innerText=m+":"+(s<10?"0":"")+s;
-            if(ip) document.querySelectorAll('.b').forEach(x=>x.style.height=(Math.random()*40+5)+'px');
-        };
-        a.onended=()=>m(1); ld(0);
-    <\/script></body></html>`;
-}
-
-function upd() {
-    const w = document.getElementById('in-w').value, h = document.getElementById('in-h').value;
-    document.getElementById('ifr-wrap').style.width = w + "px";
-    document.getElementById('ifr-wrap').style.height = h + "px";
-    document.getElementById('ifr').srcdoc = getSrc();
-}
-
-function show() {
-    const code = `<iframe width="${document.getElementById('in-w').value}" height="${document.getElementById('in-h').value}" srcdoc="${getSrc().replace(/"/g, '&quot;')}" frameborder="0" scrolling="no" style="border-radius:30px;"></iframe>`;
-    document.getElementById('res').value = code;
-    document.getElementById('mod').style.display = 'flex';
-}
-window.onload = upd;
-</script>
-</body>
-</html>
+          list = document.getElementById('in-list').value.split('\
