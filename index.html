@@ -2,27 +2,149 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v8.6</title>
+    <title>Твой аудиоплеер v8.7</title>
     <style>
-        :root { --accent: #00d4ff; --bg: #0f0f12; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 340px; background: #18181c; padding: 25px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
-        .sidebar h2 { color: var(--accent); font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
-        label { display: block; font-size: 10px; color: #888; margin-top: 15px; font-weight: bold; }
-        input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 10px; border-radius: 8px; margin-top: 5px; box-sizing: border-box; outline: none; }
-        .row { display: flex; gap: 10px; }
-        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
-        #ifr-wrap { border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.8); background: #111; }
-        #mod { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .mod-cnt { background: #1a1a1e; padding: 30px; border-radius: 20px; width: 550px; border: 1px solid var(--accent); text-align: center; }
-        #res { width: 100%; height: 200px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #333; resize: none; margin: 15px 0; }
+        body { font-family: system-ui, sans-serif; background: #0f0f12; color: #fff; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 320px; background: #18181c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
+        h2 { color: #00d4ff; font-size: 14px; text-transform: uppercase; margin-bottom: 20px; }
+        label { display: block; font-size: 10px; color: #888; margin-top: 12px; font-weight: bold; }
+        input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; }
+        .row { display: flex; gap: 8px; }
+        .btn-main { background: #00d4ff; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .preview { flex: 1; display: flex; align-items: center; justify-content: center; background: #050505; }
+        #ifr-container { border-radius: 30px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #000; }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 999; }
+        .modal-box { background: #1a1a1e; padding: 25px; border-radius: 15px; width: 500px; text-align: center; border: 1px solid #00d4ff; }
+        #output-code { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; margin: 15px 0; padding: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h2>Твой аудиоплеер</h2>
+    <label>GitHub адрес (префикс)</label>
+    <input type="text" id="gh-url" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
-    <label>Адрес хранилища (префикс)</label>
-    <input type="text"
+    <label>Картинка фона (прямая ссылка)</label>
+    <input type="text" id="bg-url" placeholder="https://site.com/image.jpg">
+
+    <label>Цвета (Фон | Волна | Акцент)</label>
+    <div class="row">
+        <input type="color" id="c-bg" value="#161b22">
+        <input type="color" id="c-wv" value="#ffffff">
+        <input type="color" id="c-ac" value="#00d4ff">
+    </div>
+
+    <label>Размер (Ширина х Высота)</label>
+    <div class="row">
+        <input type="number" id="pw" value="600">
+        <input type="number" id="ph" value="240">
+    </div>
+
+    <label>Плейлист (Название | Файл)</label>
+    <textarea id="plist-raw" rows="6">Track 01 | 1.mp3
+Track 02 | 2.mp3</textarea>
+
+    <button class="btn-main" onclick="refresh()">ОБНОВИТЬ</button>
+    <button class="btn-main" style="background:#333; color:#fff;" onclick="openCode()">ПОЛУЧИТЬ КОД</button>
+</div>
+
+<div class="preview">
+    <div id="ifr-container"><iframe id="ifr" frameborder="0"></iframe></div>
+</div>
+
+<div id="modal">
+    <div class="modal-box">
+        <h3 style="margin:0; color:#00d4ff">Код для Genially:</h3>
+        <textarea id="output-code" readonly></textarea>
+        <button class="btn-main" onclick="document.getElementById('modal').style.display='none'">ЗАКРЫТЬ</button>
+    </div>
+</div>
+
+<script>
+function buildHTML() {
+    const gh = document.getElementById('gh-url').value;
+    const bg = document.getElementById('bg-url').value;
+    const c1 = document.getElementById('c-bg').value;
+    const c2 = document.getElementById('c-wv').value;
+    const c3 = document.getElementById('c-ac').value;
+    const tracks = document.getElementById('plist-raw').value.split('\n').filter(t => t.includes('|')).map(t => {
+        const parts = t.split('|');
+        return { n: parts[0].trim(), f: parts[1].trim() };
+    });
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body { 
+        margin:0; height:100vh; display:flex; overflow:hidden; font-family:sans-serif; border-radius:30px;
+        background: ${c1};
+        ${bg ? `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${bg}');` : ''}
+        background-size: cover; background-position: center;
+    }
+    .vol { width:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.2); border-right:1px solid rgba(255,255,255,0.1); }
+    .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:100px; width:6px; accent-color:${c3}; }
+    .main { flex:1; padding:20px; display:flex; flex-direction:column; color:white; position:relative; }
+    #tn { font-size:16px; font-weight:bold; color:${c3}; text-align:right; }
+    #tm { font-size:12px; opacity:0.7; text-align:right; font-family:monospace; }
+    .wv { flex:1; display:flex; align-items:center; justify-content:center; gap:3px; }
+    .b { width:4px; height:8px; background:${c2}; border-radius:2px; box-shadow: 0 0 5px ${c2}; transition: 0.1s; }
+    .btns { display:flex; align-items:center; justify-content:flex-end; gap:15px; }
+    .btn { background:none; border:none; color:white; cursor:pointer; font-size:22px; }
+    .play { width:45px; height:45px; background:${c3}; color:black; border-radius:50%; font-size:18px; display:flex; align-items:center; justify-content:center; }
+    #pl-box { position:absolute; inset:0; background:rgba(0,0,0,0.95); z-index:10; display:none; flex-direction:column; padding:15px; }
+    .pl-i { padding:10px; font-size:13px; cursor:pointer; border-bottom:1px solid #333; }
+    .pl-i.active { color:${c3}; }
+    </style></head><body>
+    <div id="pl-box">
+        <div style="display:flex;justify-content:space-between;color:${c3};font-size:11px;font-weight:bold;margin-bottom:10px"><span>PLAYLIST</span><span onclick="tog()" style="cursor:pointer">✕</span></div>
+        <div id="list-c" style="overflow-y:auto"></div>
+    </div>
+    <div class="vol">🔊<input type="range" class="vs" min="0" max="1" step="0.01" value="0.5" oninput="a.volume=this.value"></div>
+    <div class="main">
+        <div id="tn">LOADING...</div><div id="tm">00:00</div>
+        <div class="wv" id="wv"></div>
+        <div class="btns">
+            <button class="btn" onclick="tog()">📜</button>
+            <button class="btn" onclick="m(-1)">⏮</button>
+            <button class="btn play" id="pb" onclick="t()">▶</button>
+            <button class="btn" onclick="m(1)">⏭</button>
+        </div>
+    </div>
+    <script>
+    const R="${gh}", L=${JSON.stringify(tracks)}; let ci=0, ip=false; const a=new Audio();
+    const wv=document.getElementById('wv'); for(let i=0;i<25;i++) wv.innerHTML+='<div class="b"></div>';
+    function tog(){ const p=document.getElementById('pl-box'); p.style.display=p.style.display==='flex'?'none':'flex'; build(); }
+    function build(){ document.getElementById('list-c').innerHTML=L.map((t,i)=>\`<div class="pl-i \${i===ci?'active':''}" onclick="sel(\${i})">\${t.n}</div>\`).join(''); }
+    function sel(i){ ld(i); tog(); a.play(); ip=true; pb.innerText="⏸"; }
+    function ld(i){ ci=i; const f=L[ci].f; a.src=f.startsWith('http')?f:R+f; document.getElementById('tn').innerText=L[ci].n; build(); }
+    function t(){ if(ip){a.pause(); pb.innerText="▶"} else {a.play(); pb.innerText="⏸"} ip=!ip; }
+    function m(s){ ci=(ci+s+L.length)%L.length; ld(ci); if(ip) a.play(); }
+    a.ontimeupdate=()=>{
+        let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
+        document.getElementById('tm').innerText=m+":"+(s<10?"0":"")+s;
+        if(ip) document.querySelectorAll('.b').forEach(x=>x.style.height=(Math.random()*40+5)+'px');
+    };
+    a.onended=()=>m(1); ld(0);
+    <\/script></body></html>`;
+}
+
+function refresh() {
+    const w = document.getElementById('pw').value, h = document.getElementById('ph').value;
+    const container = document.getElementById('ifr-container');
+    const ifr = document.getElementById('ifr');
+    container.style.width = w + "px";
+    container.style.height = h + "px";
+    ifr.style.width = "100%";
+    ifr.style.height = "100%";
+    const blob = new Blob([buildHTML()], {type: 'text/html'});
+    ifr.src = URL.createObjectURL(blob);
+}
+
+function openCode() {
+    const html = buildHTML().replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    document.getElementById('output-code').value = `<iframe width="${document.getElementById('pw').value}" height="${document.getElementById('ph').value}" srcdoc="${html}" frameborder="0" scrolling="no" style="border-radius:30px; overflow:hidden;"></iframe>`;
+    document.getElementById('modal').style.display = 'flex';
+}
+window.onload = refresh;
+</script>
+</body>
+</html>
