@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v8.4</title>
+    <title>Твой аудиоплеер v8.5</title>
     <style>
         :root { --accent: #00d4ff; --bg: #0f0f12; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -28,7 +28,7 @@
     <input type="text" id="in-gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
     <label>Фоновая картинка (URL)</label>
-    <input type="text" id="in-bg-img" placeholder="Вставь ссылку на картинку">
+    <input type="text" id="in-bg-img" placeholder="Вставь ссылку или оставь пустым">
 
     <label>Цвета (Фон | Волна | Акцент)</label>
     <div class="row">
@@ -43,9 +43,10 @@
         <input type="number" id="in-h" value="240">
     </div>
 
-    <label>Плейлист (Имя | Файл или URL)</label>
+    <label>Плейлист (Название | Файл или URL)</label>
     <textarea id="in-list" rows="5">Track 01 | 1.mp3
-Track 02 | 2.mp3</textarea>
+Track 02 | 2.mp3
+Google Song | https://drive.google.com/uc?export=download&id=123</textarea>
 
     <button class="btn-upd" onclick="upd()">ОБНОВИТЬ ПРЕДПРОСМОТР</button>
     <button class="btn-upd" style="background:#333; color:#fff;" onclick="show()">ПОЛУЧИТЬ КОД</button>
@@ -70,4 +71,10 @@ function generatePlayerHTML() {
     const c1 = document.getElementById('in-c1').value;
     const c2 = document.getElementById('in-c2').value;
     const c3 = document.getElementById('in-c3').value;
-    const listRaw = document.getElementById('in-list').value.split('\n').
+    const listRaw = document.getElementById('in-list').value.split('\n').filter(l => l.includes('|'));
+    const list = listRaw.map(l => ({ n: l.split('|')[0].trim(), f: l.split('|')[1].trim() }));
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body { 
+        margin:0; padding:0; height:100vh; font-family:sans-serif; overflow:hidden; display:flex; border-radius:30px; 
+        background-color: ${c1};
