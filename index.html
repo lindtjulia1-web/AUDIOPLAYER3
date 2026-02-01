@@ -2,27 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v8.7</title>
+    <title>Твой аудиоплеер v8.8</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #0f0f12; color: #fff; margin: 0; display: flex; height: 100vh; }
         .sidebar { width: 320px; background: #18181c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
         h2 { color: #00d4ff; font-size: 14px; text-transform: uppercase; margin-bottom: 20px; }
         label { display: block; font-size: 10px; color: #888; margin-top: 12px; font-weight: bold; }
-        input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; }
+        input, textarea { width: 100%; background: #26262e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; outline: none; }
         .row { display: flex; gap: 8px; }
-        .btn-main { background: #00d4ff; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-main { background: #00d4ff; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .btn-main:hover { opacity: 0.8; }
         .preview { flex: 1; display: flex; align-items: center; justify-content: center; background: #050505; }
-        #ifr-container { border-radius: 30px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #000; }
+        #ifr-container { border-radius: 30px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #000; transition: 0.3s; }
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 999; }
         .modal-box { background: #1a1a1e; padding: 25px; border-radius: 15px; width: 500px; text-align: center; border: 1px solid #00d4ff; }
-        #output-code { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; margin: 15px 0; padding: 10px; }
+        #output-code { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; margin: 15px 0; padding: 10px; resize: none; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h2>Твой аудиоплеер</h2>
-    <label>GitHub адрес (префикс)</label>
+    
+    <label>Адрес хранилища (префикс)</label>
     <input type="text" id="gh-url" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
     <label>Картинка фона (прямая ссылка)</label>
@@ -56,7 +58,7 @@ Track 02 | 2.mp3</textarea>
 <div id="modal">
     <div class="modal-box">
         <h3 style="margin:0; color:#00d4ff">Код для Genially:</h3>
-        <textarea id="output-code" readonly></textarea>
+        <textarea id="output-code" readonly onclick="this.select()"></textarea>
         <button class="btn-main" onclick="document.getElementById('modal').style.display='none'">ЗАКРЫТЬ</button>
     </div>
 </div>
@@ -81,26 +83,27 @@ function buildHTML() {
         background-size: cover; background-position: center;
     }
     .vol { width:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.2); border-right:1px solid rgba(255,255,255,0.1); }
-    .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:100px; width:6px; accent-color:${c3}; }
+    .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:100px; width:6px; accent-color:${c3}; cursor:pointer; }
     .main { flex:1; padding:20px; display:flex; flex-direction:column; color:white; position:relative; }
-    #tn { font-size:16px; font-weight:bold; color:${c3}; text-align:right; }
+    #tn { font-size:16px; font-weight:bold; color:${c3}; text-align:right; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     #tm { font-size:12px; opacity:0.7; text-align:right; font-family:monospace; }
     .wv { flex:1; display:flex; align-items:center; justify-content:center; gap:3px; }
     .b { width:4px; height:8px; background:${c2}; border-radius:2px; box-shadow: 0 0 5px ${c2}; transition: 0.1s; }
     .btns { display:flex; align-items:center; justify-content:flex-end; gap:15px; }
     .btn { background:none; border:none; color:white; cursor:pointer; font-size:22px; }
-    .play { width:45px; height:45px; background:${c3}; color:black; border-radius:50%; font-size:18px; display:flex; align-items:center; justify-content:center; }
+    .play { width:45px; height:45px; background:${c3}; color:black; border-radius:50%; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     #pl-box { position:absolute; inset:0; background:rgba(0,0,0,0.95); z-index:10; display:none; flex-direction:column; padding:15px; }
-    .pl-i { padding:10px; font-size:13px; cursor:pointer; border-bottom:1px solid #333; }
-    .pl-i.active { color:${c3}; }
+    .pl-i { padding:10px; font-size:13px; cursor:pointer; border-bottom:1px solid #333; transition: 0.2s; }
+    .pl-i:hover { background: rgba(255,255,255,0.1); }
+    .pl-i.active { color:${c3}; font-weight:bold; }
     </style></head><body>
     <div id="pl-box">
-        <div style="display:flex;justify-content:space-between;color:${c3};font-size:11px;font-weight:bold;margin-bottom:10px"><span>PLAYLIST</span><span onclick="tog()" style="cursor:pointer">✕</span></div>
-        <div id="list-c" style="overflow-y:auto"></div>
+        <div style="display:flex;justify-content:space-between;color:${c3};font-size:11px;font-weight:bold;margin-bottom:10px;text-transform:uppercase;"><span>Плейлист</span><span onclick="tog()" style="cursor:pointer; font-size:18px;">✕</span></div>
+        <div id="list-c" style="overflow-y:auto; flex:1;"></div>
     </div>
     <div class="vol">🔊<input type="range" class="vs" min="0" max="1" step="0.01" value="0.5" oninput="a.volume=this.value"></div>
     <div class="main">
-        <div id="tn">LOADING...</div><div id="tm">00:00</div>
+        <div id="tn">ЗАГРУЗКА...</div><div id="tm">00:00</div>
         <div class="wv" id="wv"></div>
         <div class="btns">
             <button class="btn" onclick="tog()">📜</button>
@@ -141,7 +144,7 @@ function refresh() {
 
 function openCode() {
     const html = buildHTML().replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-    document.getElementById('output-code').value = `<iframe width="${document.getElementById('pw').value}" height="${document.getElementById('ph').value}" srcdoc="${html}" frameborder="0" scrolling="no" style="border-radius:30px; overflow:hidden;"></iframe>`;
+    document.getElementById('output-code').value = `<iframe width="${document.getElementById('pw').value}" height="${document.getElementById('ph').value}" srcdoc="${html}" frameborder="0" scrolling="no" style="border-radius:30px; overflow:hidden; border:none;"></iframe>`;
     document.getElementById('modal').style.display = 'flex';
 }
 window.onload = refresh;
