@@ -2,128 +2,131 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v5.1</title>
+    <title>Твой аудиоплеер v5.2</title>
     <style>
         :root { --accent: #00d4ff; --bg: #121214; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e1e1e6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Боковая панель */
-        .sidebar { width: 340px; background: #19191c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; z-index: 10; }
-        .sidebar h2 { color: var(--accent); font-size: 16px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar { width: 340px; background: #19191c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
+        .sidebar h2 { color: var(--accent); font-size: 16px; margin-bottom: 20px; text-transform: uppercase; }
         label { display: block; font-size: 10px; color: #888; margin-top: 10px; font-weight: bold; }
         input, textarea { width: 100%; background: #29292e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; font-size: 13px; }
-        .row { display: flex; gap: 8px; }
-        .btn-gen { background: var(--accent); color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-gen:hover { opacity: 0.8; }
-
-        /* Область предпросмотра */
-        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #222 0%, #000 100%); position: relative; }
-        #iframe-wrap { border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); background: #333; }
-
-        /* Окно с кодом (вместо промпта) */
-        #code-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1d; border: 1px solid #444; padding: 20px; border-radius: 15px; display: none; width: 500px; z-index: 1000; box-shadow: 0 0 30px rgba(0,0,0,1); }
-        #code-modal h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--accent); }
-        #output-code { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; padding: 10px; border: 1px solid #333; resize: none; }
+        .btn-gen { background: var(--accent); color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+        #iframe-wrap { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #222; }
+        #code-output-area { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1d; padding: 20px; border-radius: 12px; display: none; width: 450px; border: 1px solid var(--accent); z-index: 100; }
+        #final-code { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>КОНСТРУКТОР V5.1</h2>
-    
-    <label>Адрес хранилища</label>
+    <h2>КОНСТРУКТОР V5.2</h2>
+    <label>GitHub Root URL</label>
     <input type="text" id="gh-root" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
-    <label>Фоновое изображение (URL)</label>
-    <input type="text" id="bg-img" value="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop" oninput="updatePreview()">
-
-    <label>Размеры (Ш х В)</label>
-    <div class="row">
-        <input type="number" id="p-w" value="600" oninput="updatePreview()">
-        <input type="number" id="p-h" value="250" oninput="updatePreview()">
-    </div>
+    <label>Фон (Цвет или URL картинки)</label>
+    <input type="text" id="bg-val" value="#054b7d">
     
-    <label>Цвета (Текст | Акцент)</label>
-    <div class="row">
-        <input type="color" id="clr-text" value="#ffffff" oninput="updatePreview()">
-        <input type="color" id="clr-acc" value="#00d4ff" oninput="updatePreview()">
+    <label>Размеры (Ш х В)</label>
+    <div style="display:flex; gap:5px;">
+        <input type="number" id="p-w" value="600">
+        <input type="number" id="p-h" value="220">
     </div>
 
-    <label>Плейлист (Название | файл)</label>
-    <textarea id="playlist-data" rows="4" oninput="updatePreview()">Track 01 | 1.mp3
+    <label>Плейлист</label>
+    <textarea id="playlist-data" rows="5">Track 01 | 1.mp3
 Track 02 | 2.mp3</textarea>
 
-    <button class="btn-gen" onclick="showCode()">ПОЛУЧИТЬ КОД ДЛЯ GENIALLY</button>
+    <button class="btn-gen" onclick="updatePreview()">ОБНОВИТЬ ПРЕДПРОСМОТР</button>
+    <button class="btn-gen" style="background:#fff" onclick="showCode()">ПОЛУЧИТЬ КОД</button>
 </div>
 
 <div class="preview-area">
-    <div id="iframe-wrap"><div id="iframe-container"></div></div>
+    <div id="iframe-wrap">
+        <iframe id="p-frame" frameborder="0" style="width:100%; height:100%;"></iframe>
+    </div>
 </div>
 
-<div id="code-modal">
-    <h3>Код готов! Скопируй его полностью:</h3>
-    <textarea id="output-code" readonly onclick="this.select()"></textarea>
-    <button class="btn-gen" style="background:#333; color:#fff;" onclick="document.getElementById('code-modal').style.display='none'">ЗАКРЫТЬ</button>
+<div id="code-output-area">
+    <h3 style="margin:0 0 10px 0; font-size: 14px;">Код для Genially:</h3>
+    <textarea id="final-code" readonly onclick="this.select()"></textarea>
+    <button class="btn-gen" onclick="document.getElementById('code-output-area').style.display='none'">ЗАКРЫТЬ</button>
 </div>
 
 <script>
-function generatePlayerSource() {
+function getSource() {
     const root = document.getElementById('gh-root').value,
-          bg = document.getElementById('bg-img').value,
-          ct = document.getElementById('clr-text').value,
-          ca = document.getElementById('clr-acc').value;
-    
-    const rawList = document.getElementById('playlist-data').value.split('\n').filter(l => l.includes('|'));
-    const playlist = rawList.map(l => { const p = l.split('|'); return { n: p[0].trim(), f: p[1].trim() }; });
+          bg = document.getElementById('bg-val').value,
+          raw = document.getElementById('playlist-data').value.split('\n').filter(l => l.includes('|')),
+          list = raw.map(l => { const p = l.split('|'); return {n: p[0].trim(), f: p[1].trim()}; });
+
+    const isImg = bg.startsWith('http');
+    const bgStyle = isImg ? `background: url('${bg}') center/cover;` : `background: ${bg};`;
 
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-        body { margin: 0; padding: 0; height: 100vh; display: flex; font-family: 'Segoe UI', sans-serif; overflow: hidden; color: ${ct}; background: #000; }
-        .card { width: 100%; height: 100%; background: url('${bg}') center/cover no-repeat; display: flex; position: relative; }
-        .card::before { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); }
+        body { margin: 0; padding: 0; height: 100vh; font-family: sans-serif; color: white; overflow: hidden; }
+        .p { width: 100%; height: 100%; ${bgStyle} display: flex; position: relative; align-items: center; }
+        .p::after { content:''; position:absolute; width:100%; height:100%; background: rgba(0,0,0,0.2); }
         
-        .vol-pane { position: relative; z-index: 2; width: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(0,0,0,0.2); }
-        .v-slider { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 4px; height: 100px; accent-color: ${ca}; cursor: pointer; }
-        
-        .main { flex: 1; z-index: 2; display: flex; flex-direction: column; padding: 25px; position: relative; }
-        .info { position: absolute; top: 20px; right: 25px; text-align: right; }
-        .now { font-size: 12px; opacity: 0.6; text-transform: uppercase; }
-        .time { font-size: 32px; font-weight: bold; color: ${ca}; font-family: monospace; }
-        
-        .viz { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 40px; }
-        .bar { width: 5px; height: 15px; background: ${ca}; border-radius: 10px; transition: 0.15s; opacity: 0.7; }
+        .vol { z-index: 5; width: 50px; height: 80%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); margin-left: 15px; border-radius: 10px; }
+        .vs { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 4px; height: 100px; accent-color: #fff; }
 
-        .footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-        .track-name { font-size: 14px; font-weight: bold; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btns { display: flex; align-items: center; gap: 15px; }
-        .b { background: none; border: none; color: ${ct}; cursor: pointer; font-size: 18px; transition: 0.2s; }
-        .play { width: 45px; height: 45px; background: ${ct}; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .b:hover { color: ${ca}; transform: scale(1.1); }
-        .play:hover { background: ${ca}; }
+        .cnt { flex: 1; z-index: 5; display: flex; flex-direction: column; padding: 20px; height: 100%; box-sizing: border-box; }
+        .info { align-self: flex-end; text-align: right; margin-bottom: 20px; }
+        .title { font-size: 14px; opacity: 0.8; }
+        .time { font-size: 36px; font-weight: bold; }
+
+        .viz { flex: 1; display: flex; align-items: center; justify-content: center; gap: 3px; }
+        .b { width: 3px; height: 10px; background: rgba(255,255,255,0.5); border-radius: 2px; }
+
+        .ctrl { display: flex; align-items: center; justify-content: flex-end; gap: 15px; margin-top: 10px; }
+        .btn { background: none; border: none; color: white; cursor: pointer; font-size: 20px; }
+        .play { width: 50px; height: 50px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
     </style></head><body>
-    <div class="card">
-        <div class="vol-pane"><span>🔔</span><input type="range" class="v-slider" min="0" max="1" step="0.01" value="0" oninput="a.volume=this.value"><span>🎵</span></div>
-        <div class="main">
-            <div class="info">
-                <div id="t-name" class="now">READY</div>
-                <div id="clock" class="time">00:00</div>
-            </div>
-            <div class="viz" id="viz"></div>
-            <div class="footer">
-                <div class="track-name">Now Playing...</div>
-                <div class="btns">
-                    <button class="b" onclick="mv(-1)">⏮</button>
-                    <button class="b play" id="pB" onclick="tg()">▶</button>
-                    <button class="b" onclick="mv(1)">⏭</button>
-                </div>
+    <div class="p">
+        <div class="vol"><span>🔔</span><input type="range" class="vs" min="0" max="1" step="0.01" value="0" oninput="a.volume=this.value"><span>🎵</span></div>
+        <div class="cnt">
+            <div class="info"><div class="title" id="tn">READY</div><div class="time" id="tm">00:00</div></div>
+            <div class="viz" id="vz"></div>
+            <div class="ctrl">
+                <button class="btn" onclick="mv(-1)">⏮</button>
+                <button class="btn play" id="pb" onclick="tg()">▶</button>
+                <button class="btn" onclick="mv(1)">⏭</button>
             </div>
         </div>
     </div>
     <script>
-        const B="${root}", T=${JSON.stringify(playlist)};
+        const B="${root}", T=${JSON.stringify(list)};
         let ci=0, iP=false; const a=new Audio(); a.volume=0;
-        const viz=document.getElementById("viz");
-        for(let i=0; i<35; i++){ let b=document.createElement("div"); b.className="bar"; viz.appendChild(b); }
-        
-        function ld(i){ ci=i; a.src=B+T[ci].f; document.getElementById("t-name").innerText=T[ci].n; }
-        function tg(){ if(iP){ a.pause(); document.getElementById("pB").innerText="▶"; } else { a.play(); document.getElementById("pB").innerText="⏸"; } iP=!iP; }
-        function mv(s){ ci=(ci+s+T.length)%T.length; ld(ci); if(iP) a
+        const vz=document.getElementById("vz");
+        for(let i=0; i<40; i++){ let d=document.createElement("div"); d.className="b"; vz.appendChild(d); }
+        function ld(i){ ci=i; a.src=B+T[ci].f; document.getElementById("tn").innerText=T[ci].n; }
+        function tg(){ if(iP){ a.pause(); document.getElementById("pb").innerText="▶"; } else { a.play(); document.getElementById("pb").innerText="⏸"; } iP=!iP; }
+        function mv(s){ ci=(ci+s+T.length)%T.length; ld(ci); if(iP) a.play(); }
+        a.ontimeupdate=()=>{ 
+            let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
+            document.getElementById("tm").innerText=m+":"+(s<10?"0":"")+s;
+            if(iP) document.querySelectorAll(".b").forEach(x=>x.style.height=(Math.random()*60+5)+"px");
+        };
+        a.onended=()=>mv(1); ld(0);
+    <\/script></body></html>`;
+}
+
+function updatePreview() {
+    const w = document.getElementById('p-w').value, h = document.getElementById('p-h').value;
+    const wrap = document.getElementById('iframe-wrap');
+    wrap.style.width = w + "px"; wrap.style.height = h + "px";
+    document.getElementById('p-frame').srcdoc = getSource();
+}
+
+function showCode() {
+    const w = document.getElementById('p-w').value, h = document.getElementById('p-h').value;
+    const src = getSource().replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    document.getElementById('final-code').value = `<iframe width="${w}" height="${h}" srcdoc="${src}" frameborder="0" scrolling="no" style="border-radius:20px;"></iframe>`;
+    document.getElementById('code-output-area').style.display = 'block';
+}
+
+window.onload = updatePreview;
+</script>
+</body>
+</html>
