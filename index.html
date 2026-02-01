@@ -2,126 +2,102 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v5.4</title>
+    <title>Твой аудиоплеер v6.0</title>
     <style>
-        :root { --accent: #00d4ff; --bg: #121214; }
+        :root { --accent: #00d4ff; --bg: #0f0f11; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e1e1e6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* Панель настроек */
-        .sidebar { width: 340px; background: #19191c; padding: 20px; border-right: 1px solid #333; overflow-y: auto; box-sizing: border-box; }
-        .sidebar h2 { color: var(--accent); font-size: 14px; margin: 0 0 20px 0; text-transform: uppercase; }
-        label { display: block; font-size: 10px; color: #888; margin-top: 12px; font-weight: bold; }
-        input, textarea { width: 100%; background: #29292e; border: 1px solid #3e3e42; color: #fff; padding: 8px; border-radius: 6px; margin-top: 4px; box-sizing: border-box; font-size: 13px; }
-        .row { display: flex; gap: 8px; }
+        .sidebar { width: 340px; background: #16161a; padding: 25px; border-right: 1px solid #222; overflow-y: auto; box-sizing: border-box; }
+        .sidebar h2 { color: var(--accent); font-size: 14px; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; font-size: 10px; color: #666; margin-top: 15px; font-weight: bold; text-transform: uppercase; }
+        input, textarea { width: 100%; background: #222; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; margin-top: 5px; box-sizing: border-box; font-size: 13px; }
+        .row { display: flex; gap: 10px; }
         
-        .btn-update { background: #00d4ff; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .btn-code { background: #3e3e42; color: #fff; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .btn-upd { background: var(--accent); color: #000; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-upd:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,212,255,0.3); }
+        .btn-code { background: transparent; border: 1px solid #444; color: #aaa; padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-size: 11px; }
 
-        /* Центр (плеер) */
-        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
-        #iframe-wrap { border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #222; }
+        /* Превью */
+        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background: #09090b; }
+        #ifr-wrap { border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8); background: #1a1a1e; }
         
-        /* Окно с кодом */
-        #modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1d; border: 1px solid #00d4ff; padding: 20px; border-radius: 15px; display: none; width: 450px; z-index: 1000; }
-        #code-res { width: 100%; height: 150px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; margin-top: 10px; padding: 10px; border: 1px solid #333; }
+        /* Модалка */
+        #mod { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .mod-cnt { background: #1a1a1e; padding: 30px; border-radius: 20px; width: 500px; border: 1px solid var(--accent); }
+        #res { width: 100%; height: 180px; background: #000; color: #0f9; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 10px; margin: 15px 0; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>КОНСТРУКТОР V5.4</h2>
+    <h2>КОНСТРУКТОР V6.0</h2>
     
-    <label>GitHub Root URL</label>
-    <input type="text" id="gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
+    <label>GitHub Root (адрес папки)</label>
+    <input type="text" id="in-gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
-    <label>Фоновая картинка (URL)</label>
-    <input type="text" id="bg" value="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000">
-
+    <label>Цвета (Корпус | Иконки | Акцент)</label>
     <div class="row">
-        <div style="flex:1">
-            <label>Цвет текста</label>
-            <input type="color" id="c1" value="#ffffff">
-        </div>
-        <div style="flex:1">
-            <label>Цвет акцента</label>
-            <input type="color" id="c2" value="#00d4ff">
-        </div>
+        <input type="color" id="in-c1" value="#1a1a1e">
+        <input type="color" id="in-c2" value="#00d4ff">
+        <input type="color" id="in-c3" value="#ff0055">
     </div>
 
-    <label>Размер (Ш х В)</label>
+    <label>Размеры (Ш х В)</label>
     <div class="row">
-        <input type="number" id="w" value="600">
-        <input type="number" id="h" value="250">
+        <input type="number" id="in-w" value="600">
+        <input type="number" id="in-h" value="220">
     </div>
 
-    <label>Плейлист (Название | файл)</label>
-    <textarea id="plist" rows="4">Track 01 | 1.mp3
+    <label>Плейлист</label>
+    <textarea id="in-list" rows="4">Track 01 | 1.mp3
 Track 02 | 2.mp3</textarea>
 
-    <button class="btn-update" onclick="update()">ОБНОВИТЬ ПРЕДПРОСМОТР</button>
-    <button class="btn-code" onclick="show()">ПОЛУЧИТЬ КОД</button>
+    <button class="btn-upd" onclick="upd()">ОБНОВИТЬ ПРЕДПРОСМОТР</button>
+    <button class="btn-code" onclick="show()">СКОПИРОВАТЬ КОД</button>
 </div>
 
 <div class="preview-area">
-    <div id="iframe-wrap"><iframe id="ifr" frameborder="0" style="width:100%; height:100%;"></iframe></div>
+    <div id="ifr-wrap"><iframe id="ifr" frameborder="0" style="width:100%; height:100%;"></iframe></div>
 </div>
 
-<div id="modal">
-    <h3 style="margin:0; font-size:14px;">Код для вставки:</h3>
-    <textarea id="code-res" readonly onclick="this.select()"></textarea>
-    <button class="btn-update" onclick="document.getElementById('modal').style.display='none'">ЗАКРЫТЬ</button>
+<div id="mod">
+    <div class="mod-cnt">
+        <h3 style="margin:0; color:var(--accent)">Готово!</h3>
+        <textarea id="res" readonly onclick="this.select()"></textarea>
+        <button class="btn-upd" onclick="document.getElementById('mod').style.display='none'">ЗАКРЫТЬ</button>
+    </div>
 </div>
 
 <script>
-function buildSource() {
-    const root = document.getElementById('gh').value,
-          img = document.getElementById('bg').value,
-          txt = document.getElementById('c1').value,
-          acc = document.getElementById('c2').value,
-          raw = document.getElementById('plist').value.split('\n').filter(s => s.includes('|')),
-          list = raw.map(s => { const p = s.split('|'); return {n: p[0].trim(), f: p[1].trim()}; });
+function getSrc() {
+    const gh = document.getElementById('in-gh').value,
+          c1 = document.getElementById('in-c1').value,
+          c2 = document.getElementById('in-c2').value,
+          c3 = document.getElementById('in-c3').value,
+          list = document.getElementById('in-list').value.split('\n').filter(l=>l.includes('|')).map(l=>{
+              const p=l.split('|'); return {n:p[0].trim(), f:p[1].trim()};
+          });
 
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-        body { margin: 0; padding: 0; height: 100vh; font-family: sans-serif; color: ${txt}; background: #000; overflow: hidden; }
-        .p { width: 100%; height: 100%; background: url('${img}') center/cover; display: flex; position: relative; }
-        .p::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); }
-        .v { position: relative; z-index: 9; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); }
-        .vs { writing-mode: bt-lr; -webkit-appearance: slider-vertical; height: 100px; accent-color: ${acc}; }
-        .m { flex: 1; z-index: 9; display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; }
-        .hdr { text-align: right; }
-        .tm { font-size: 40px; font-weight: bold; color: ${acc}; font-family: monospace; }
-        .wv { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .b { width: 4px; height: 10px; background: ${txt}; opacity: 0.5; border-radius: 2px; }
-        .ctrl { display: flex; align-items: center; justify-content: flex-end; gap: 15px; }
-        .bt { background: none; border: none; color: ${txt}; cursor: pointer; font-size: 20px; }
-        .pl { width: 50px; height: 50px; background: ${txt}; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        body { margin:0; padding:0; height:100vh; font-family:'Segoe UI', sans-serif; background:transparent; color:white; overflow:hidden; }
+        .p { width:100%; height:100%; background:${c1}; display:flex; position:relative; padding:15px; box-sizing:border-box; border-radius:24px; }
+        
+        .v-box { width:40px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+        .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:80px; width:4px; accent-color:${c2}; cursor:pointer; }
+        
+        .main { flex:1; display:flex; flex-direction:column; padding-left:20px; }
+        .hdr { display:flex; flex-direction:column; margin-bottom:10px; }
+        .tn { font-size:11px; text-transform:uppercase; color:${c3}; font-weight:bold; letter-spacing:1px; }
+        .tm { font-size:32px; font-weight:900; color:${c2}; font-family:monospace; line-height:1; }
+        
+        .eq { flex:1; display:flex; align-items:center; gap:3px; margin:10px 0; }
+        .b { width:4px; height:8px; background:linear-gradient(to top, ${c2}, ${c3}); border-radius:2px; opacity:0.6; transition: 0.2s; box-shadow: 0 0 10px ${c2}44; }
+
+        .btns { display:flex; align-items:center; gap:12px; }
+        .btn { background:rgba(255,255,255,0.05); border:none; color:${c2}; width:40px; height:40px; border-radius:10px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+        .btn:hover { background:rgba(255,255,255,0.15); color:white; }
+        .pl { width:50px; height:50px; background:${c2}; color:#000; border-radius:12px; font-size:20px; }
     </style></head><body>
-    <div class="p"><div class="v">🔊<input type="range" class="vs" min="0" max="1" step="0.01" value="0.5" oninput="a.volume=this.value">🔈</div>
-    <div class="m"><div class="hdr"><div id="tn" style="font-size:12px;opacity:0.7">READY</div><div id="tm" class="tm">00:00</div></div>
-    <div class="wv" id="wv"></div>
-    <div class="ctrl"><button class="bt" onclick="mv(-1)">⏮</button><button class="bt pl" id="pb" onclick="tg()">▶</button><button class="bt" onclick="mv(1)">⏭</button></div>
-    </div></div>
-    <script>
-        const R="${root}", L=${JSON.stringify(list)}; let ci=0, ip=false; const a=new Audio();
-        const wv=document.getElementById('wv'); for(let i=0; i<30; i++) wv.innerHTML+='<div class="b"></div>';
-        function ld(i){ ci=i; a.src=R+L[ci].f; document.getElementById('tn').innerText=L[ci].n; }
-        function tg(){ if(ip){a.pause(); pb.innerText="▶"} else {a.play(); pb.innerText="⏸"} ip=!ip; }
-        function mv(s){ ci=(ci+s+L.length)%L.length; ld(ci); if(ip) a.play(); }
-        a.ontimeupdate=()=>{ 
-            let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
-            document.getElementById('tm').innerText=m+":"+(s<10?"0":"")+s;
-            if(ip) document.querySelectorAll('.b').forEach(x=>x.style.height=(Math.random()*50+5)+'px');
-        };
-        a.onended=()=>mv(1); ld(0);
-    <\/script></body></html>`;
-}
-
-function update() {
-    const ww = document.getElementById('w').value, hh = document.getElementById('h').value;
-    document.getElementById('iframe-wrap').style.width = ww + "px";
-    document.getElementById('iframe-wrap').style.height = hh + "px";
-    document.getElementById('ifr').srcdoc = buildSource();
-}
-
-function show() {
-    const final = `
+    <div class="p">
+        <div class="v-box"><span style="font-size:12px">🔊</span><input type="range" class="vs" min="0" max="1" step="0.01" value="
