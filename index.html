@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Твой аудиоплеер v7.3</title>
+    <title>Твой аудиоплеер v8.0</title>
     <style>
         :root { --accent: #00d4ff; --bg: #0f0f12; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -23,12 +23,13 @@
 <body>
 
 <div class="sidebar">
-    <h2>КОНСТРУКТОР V7.3</h2>
-    <label>GitHub Root (адрес папки)</label>
+    <h2>Твой аудиоплеер</h2>
+    
+    <label>Адрес хранилища</label>
     <input type="text" id="in-gh" value="https://lindtjulia1-web.github.io/AUDIOPLAYER2/">
     
     <label>Фоновая картинка (URL)</label>
-    <input type="text" id="in-bg-img" placeholder="Оставь пустым для цвета">
+    <input type="text" id="in-bg-img" placeholder="URL картинки или пусто">
 
     <label>Цвета (Фон | Волна | Акцент)</label>
     <div class="row">
@@ -43,9 +44,10 @@
         <input type="number" id="in-h" value="240">
     </div>
 
-    <label>Плейлист</label>
-    <textarea id="in-list" rows="4">Track 01 | 1.mp3
-Track 02 | 2.mp3</textarea>
+    <label>Плейлист (Название | файл)</label>
+    <textarea id="in-list" rows="6">Track 01 | 1.mp3
+Track 02 | 2.mp3
+Track 03 | 3.mp3</textarea>
 
     <button class="btn-upd" onclick="upd()">ОБНОВИТЬ ПРЕДПРОСМОТР</button>
     <button class="btn-code" onclick="show()">ПОЛУЧИТЬ КОД</button>
@@ -57,7 +59,7 @@ Track 02 | 2.mp3</textarea>
 
 <div id="mod">
     <div class="mod-cnt">
-        <h3 style="margin:0; color:var(--accent)">Код для вставки:</h3>
+        <h3 style="margin:0; color:var(--accent)">Код для Genially:</h3>
         <textarea id="res" readonly onclick="this.select()"></textarea>
         <button class="btn-upd" onclick="document.getElementById('mod').style.display='none'">ЗАКРЫТЬ</button>
     </div>
@@ -78,10 +80,9 @@ function generatePlayerHTML() {
 
     const background = bgImg ? `url('${bgImg}') center/cover no-repeat` : c1;
 
-    // Весь HTML/CSS/JS плеера в одной строке без лишних кавычек
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
     body { margin:0; padding:0; height:100vh; font-family:sans-serif; background:${background}; color:white; overflow:hidden; display:flex; border-radius:30px; position:relative; }
-    .glass { position:absolute; inset:0; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); z-index:0; }
+    .glass { position:absolute; inset:0; background:rgba(0,0,0,0.3); backdrop-filter:blur(12px); z-index:0; }
     .vol-box { width:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; z-index:1; border-right:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); }
     .vs { writing-mode:bt-lr; -webkit-appearance:slider-vertical; height:120px; width:6px; accent-color:${c3}; cursor:pointer; }
     .main { flex:1; display:flex; flex-direction:column; padding:25px; z-index:1; position:relative; }
@@ -89,16 +90,30 @@ function generatePlayerHTML() {
     #tn { font-size:16px; font-weight:bold; color:${c3}; }
     #tm { font-size:12px; opacity:0.6; font-family:monospace; }
     .wv { flex:1; display:flex; align-items:center; justify-content:center; gap:4px; }
-    .b { width:4px; height:10px; background:${c2}; border-radius:2px; box-shadow:0 0 10px ${c2}88; opacity:0.7; transition:0.1s; }
-    .ctrl { display:flex; align-items:center; justify-content:flex-end; gap:20px; }
-    .btn { background:none; border:none; color:white; cursor:pointer; font-size:24px; opacity:0.8; }
-    .pl { width:50px; height:50px; background:${c3}; color:black; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .b { width:4px; height:10px; background:${c2}; border-radius:2px; box-shadow:0 0 8px ${c2}88; opacity:0.7; transition:0.1s; }
+    .ctrl { display:flex; align-items:center; justify-content:flex-end; gap:15px; }
+    .btn { background:none; border:none; color:white; cursor:pointer; font-size:22px; opacity:0.8; transition:0.2s; }
+    .btn:hover { opacity:1; transform:scale(1.1); }
+    .pl { width:48px; height:48px; background:${c3}; color:black; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    
+    /* Плейлист */
+    #plist { position:absolute; inset:10px; background:rgba(0,0,0,0.85); border-radius:20px; z-index:10; display:none; flex-direction:column; padding:15px; backdrop-filter:blur(10px); border:1px solid ${c3}44; }
+    .pl-head { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:${c3}; font-weight:bold; border-bottom:1px solid #333; padding-bottom:5px; }
+    .pl-list { flex:1; overflow-y:auto; }
+    .pl-item { padding:8px 12px; font-size:13px; cursor:pointer; border-radius:6px; margin-bottom:2px; transition:0.2s; }
+    .pl-item:hover { background:rgba(255,255,255,0.1); }
+    .pl-item.active { color:${c3}; background:${c3}22; font-weight:bold; }
     </style></head><body><div class="glass"></div>
+    <div id="plist">
+        <div class="pl-head"><span>ПЛЕЙЛИСТ</span><span style="cursor:pointer" onclick="togglePL()">✕</span></div>
+        <div class="pl-list" id="pl-content"></div>
+    </div>
     <div class="vol-box">🔔<input type="range" class="vs" min="0" max="1" step="0.01" value="0.5" oninput="a.volume=this.value">🎵</div>
     <div class="main">
-        <div class="info"><div id="tn">LOADING...</div><div id="tm">00:00</div></div>
+        <div class="info"><div id="tn">ЗАГРУЗКА...</div><div id="tm">00:00</div></div>
         <div class="wv" id="wv"></div>
         <div class="ctrl">
+            <button class="btn" onclick="togglePL()">📜</button>
             <button class="btn" onclick="m(-1)">⏮</button>
             <button class="btn pl" id="pb" onclick="t()">▶</button>
             <button class="btn" onclick="m(1)">⏭</button>
@@ -107,9 +122,17 @@ function generatePlayerHTML() {
     <script>
     const R="${gh}", L=${JSON.stringify(list)}; let ci=0, ip=false; const a=new Audio();
     const wv=document.getElementById('wv'); for(let i=0;i<30;i++) wv.innerHTML+='<div class="b"></div>';
-    function ld(i){ ci=i; a.src=R+L[ci].f; document.getElementById('tn').innerText=L[ci].n; }
+    
+    function buildPL(){
+        const cont = document.getElementById('pl-content');
+        cont.innerHTML = L.map((track, i) => \`<div class="pl-item \${i===ci?'active':''}" onclick="selectT(\${i})">\${track.n}</div>\`).join('');
+    }
+    function togglePL(){ const p=document.getElementById('plist'); p.style.display = p.style.display==='flex'?'none':'flex'; }
+    function selectT(i){ ld(i); togglePL(); if(!ip) t(); else a.play(); }
+    function ld(i){ ci=i; a.src=R+L[ci].f; document.getElementById('tn').innerText=L[ci].n; buildPL(); }
     function t(){ if(ip){a.pause(); pb.innerText="▶"} else {a.play(); pb.innerText="⏸"} ip=!ip; }
     function m(s){ ci=(ci+s+L.length)%L.length; ld(ci); if(ip) a.play(); }
+    
     a.ontimeupdate=()=>{
         let m=Math.floor(a.currentTime/60), s=Math.floor(a.currentTime%60);
         document.getElementById('tm').innerText=m+":"+(s<10?"0":"")+s;
@@ -124,25 +147,18 @@ function upd() {
     const h = document.getElementById('in-h').value;
     const wrap = document.getElementById('ifr-wrap');
     const ifr = document.getElementById('ifr');
-    
-    wrap.style.width = w + "px";
-    wrap.style.height = h + "px";
-    
-    // Безопасная передача кода в iframe
+    wrap.style.width = w + "px"; wrap.style.height = h + "px";
     const blob = new Blob([generatePlayerHTML()], {type: 'text/html'});
     ifr.src = URL.createObjectURL(blob);
 }
 
 function show() {
-    // Для итогового кода используем стандартный метод с экранированием кавычек
     const rawHtml = generatePlayerHTML();
     const escapedHtml = rawHtml.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
     const finalCode = `<iframe width="${document.getElementById('in-w').value}" height="${document.getElementById('in-h').value}" srcdoc="${escapedHtml}" frameborder="0" scrolling="no" style="border-radius:30px;"></iframe>`;
-    
     document.getElementById('res').value = finalCode;
     document.getElementById('mod').style.display = 'flex';
 }
-
 window.onload = upd;
 </script>
 </body>
